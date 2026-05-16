@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minuto — Integrated Master Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=DM+Serif+Display&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --green-900: #0D2B1E;
+            --green-800: #1B4332;
+            --green-700: #1E5C40;
+            --green-500: #40916C;
+            --green-100: #D8F3DC;
+            --amber: #D4A017;
+            --amber-light: #FFF8E1;
+            --bg-light: #F9FAFB;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--bg-light);
+            color: #111827;
+        }
+
+        h1, h2, h3, .serif-font {
+            font-family: 'DM Serif Display', serif;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 280px;
+            }
+        }
+
+        .tab-btn {
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-btn.active {
+            color: var(--green-900);
+            border-bottom: 3px solid var(--amber);
+            font-weight: 700;
+        }
+
+        .section-panel {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .section-panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero-bg {
+            background: linear-gradient(135deg, var(--green-900) 0%, var(--green-800) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-bg::after {
+            content: '';
+            position: absolute;
+            bottom: -50px;
+            right: -50px;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(212, 160, 23, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .comp-table th { background: var(--green-800); color: white; }
+        .comp-table tr:nth-child(even) { background: #F3F4F6; }
+        .comp-table tr:nth-child(odd) { background: white; }
+        .comp-table tr.minuto-row { background: var(--green-100); border-top: 2px solid var(--green-500); border-bottom: 2px solid var(--green-500); font-weight: bold;}
+        
+        .fade-transition {
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        }
+
+        /* AI Bot Modal Animations */
+        #ai-bot-modal.show {
+            display: flex;
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col relative">
+
+    <!-- Top Bar -->
+    <div class="bg-[#1B4332] text-[#B7E4C7] text-[11px] font-medium tracking-widest uppercase py-2 px-6 flex justify-between items-center">
+        <span>Minuto Super-App | Master Dashboard | Confidential</span>
+        <span class="hidden sm:inline">May 2026 | Internal & Investor Use</span>
+    </div>
+
+    <!-- Hero Header -->
+    <header class="hero-bg text-white py-14 px-4 sm:px-6 lg:px-8 shadow-md">
+        <div class="max-w-7xl mx-auto">
+            <div class="inline-block text-[11px] font-bold tracking-[0.12em] uppercase text-[#52B788] mb-4 border border-[#52B788] rounded-full px-3 py-1">The Grab Moment for India</div>
+            <h1 class="text-4xl md:text-6xl max-w-4xl leading-tight mb-6 serif-font font-medium">
+                We don't just connect buyers and sellers.<br/>
+                <span class="text-[#D4A017] italic">We multiply what both get.</span>
+            </h1>
+            <p class="text-[#B7E4C7] text-xl max-w-3xl leading-relaxed mb-8">
+                We are organizing India's $100B invisible economy. Minuto is the first unified infrastructure bringing hyperlocal goods, on-demand services, and integrated payments into a single, trust-driven ecosystem.
+            </p>
+            <div class="flex flex-wrap gap-3">
+                <span class="bg-white/10 border border-white/20 rounded-full px-4 py-2 text-sm font-bold text-[#D8F3DC]">&#128640; ₹8,000 Cr+ GMV Target (Y5)</span>
+                <span class="bg-white/10 border border-white/20 rounded-full px-4 py-2 text-sm font-bold text-[#D8F3DC]">&#128200; 100,000 Partners</span>
+                <span class="bg-white/10 border border-white/20 rounded-full px-4 py-2 text-sm font-bold text-[#D8F3DC]">&#128184; Profitability by Year 5</span>
+            </div>
+            
+            <!-- Animated Tagline Banner (Integrated into Header) -->
+            <div class="mt-8 bg-[#0D2B1E]/40 backdrop-blur-md border border-white/10 rounded-xl p-4 flex items-center h-auto min-h-[64px] shadow-inner relative overflow-hidden max-w-4xl">
+                <div id="tagline-carousel" class="fade-transition w-full text-left truncate text-white">
+                    <span class="bg-[#D4A017] text-[#0D2B1E] text-xs font-bold px-2 py-1 rounded mr-3 uppercase tracking-wider">★ Strongest for investors</span> 
+                    <span class="font-medium tracking-wide text-sm md:text-base">"India has 63 million businesses. Most of them are invisible. Minuto changes that."</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40 overflow-x-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex space-x-6 sm:space-x-8 whitespace-nowrap">
+            <button class="tab-btn active py-4 text-gray-500 font-medium hover:text-green-900 focus:outline-none flex items-center gap-2" onclick="openTab('about')">
+                <span>&#11088;</span> About
+            </button>
+            <button class="tab-btn py-4 text-gray-500 font-medium hover:text-green-900 focus:outline-none flex items-center gap-2" onclick="openTab('verticals')">
+                <span>&#9632;</span> Verticals
+            </button>
+            <button class="tab-btn py-4 text-gray-500 font-medium hover:text-green-900 focus:outline-none flex items-center gap-2" onclick="openTab('financials')">
+                <span>&#128200;</span> 5-Year Growth Plan
+            </button>
+            <button class="tab-btn py-4 text-gray-500 font-medium hover:text-green-900 focus:outline-none flex items-center gap-2" onclick="openTab('differentiator')">
+                <span>&#9876;</span> Key Differentiator
+            </button>
+            <button class="tab-btn py-4 text-gray-500 font-medium hover:text-green-900 focus:outline-none flex items-center gap-2" onclick="openTab('usps')">
+                <span>&#128279;</span> USP's
+            </button>
+            <button class="tab-btn py-4 text-gray-500 font-medium hover:text-green-900 focus:outline-none flex items-center gap-2" onclick="openTab('future2030')">
+                <span>🚀</span> Future 2030
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+        <!-- TAB 0: ABOUT (formerly Investor Pitch) -->
+        <section id="about" class="section-panel active">
+            <!-- The Investor-Grade USP -->
+            <div class="bg-[#EAF7EE] border-l-4 border-[#1E5C40] p-8 rounded-r-xl mb-10 shadow-sm">
+                <p class="text-xs font-bold tracking-widest text-[#1E5C40] uppercase mb-3">The Investor-Grade USP — Opening Line</p>
+                <h2 class="text-2xl md:text-3xl text-[#0D2B1E] serif-font italic leading-snug">
+                    "Minuto is India's Grab moment. The first platform to combine hyperlocal discovery, on-demand services, and integrated payments — for the 63 million micro-businesses that have never had a digital identity."
+                </h2>
+                <p class="text-sm text-[#40916C] mt-4 font-medium">Sets the scale, the analogy, and the gap simultaneously.</p>
+            </div>
+
+            <!-- The Three-Sentence Elevator Pitch -->
+            <div class="mb-12">
+                <h3 class="text-xs font-bold tracking-widest text-gray-500 uppercase mb-4">The Three-Sentence Elevator Pitch</h3>
+                <div class="bg-white border border-gray-200 p-8 rounded-xl shadow-sm">
+                    <p class="text-lg text-gray-800 leading-relaxed">
+                        India has a <span class="font-bold text-[#0D2B1E]">$100B+ local commerce market by 2030</span> — and no dominant platform owns it yet. Minuto is the only super-app where a buyer can discover a home baker, book a plumber, and pay for both — all within their neighbourhood, all in one place. <span class="bg-[#FFF8E1] px-1 font-medium">We are not just a marketplace; we are the digital address, the trust layer, and the revenue engine for India's 63 million unorganized micro-businesses.</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Five Unfair Advantages -->
+            <div class="mb-12">
+                <h3 class="text-xs font-bold tracking-widest text-gray-500 uppercase mb-6">Five Unfair Advantages</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-5">
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:border-[#D4A017] transition-all group">
+                        <span class="text-[#D4A017] font-bold text-2xl block mb-2 group-hover:scale-110 transition-transform origin-left">01</span>
+                        <h4 class="font-bold text-[#0D2B1E] text-base mb-2">First mover in the gap</h4>
+                        <p class="text-sm text-gray-600 leading-relaxed">No platform today combines goods + services + payments in a single hyperlocal experience. The gap is real and enormous.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:border-[#D4A017] transition-all group">
+                        <span class="text-[#D4A017] font-bold text-2xl block mb-2 group-hover:scale-110 transition-transform origin-left">02</span>
+                        <h4 class="font-bold text-[#0D2B1E] text-base mb-2">Cross-vertical flywheel</h4>
+                        <p class="text-sm text-gray-600 leading-relaxed">Every buyer becomes a 4x user — groceries, services, pan-India shopping, and payments. CAC is shared across all verticals.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:border-[#D4A017] transition-all group">
+                        <span class="text-[#D4A017] font-bold text-2xl block mb-2 group-hover:scale-110 transition-transform origin-left">03</span>
+                        <h4 class="font-bold text-[#0D2B1E] text-base mb-2">Asset-light at scale</h4>
+                        <p class="text-sm text-gray-600 leading-relaxed">No dark stores. No warehouses. Real local sellers are the inventory. Blinkit needs capex. Minuto needs relationships.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:border-[#D4A017] transition-all group">
+                        <span class="text-[#D4A017] font-bold text-2xl block mb-2 group-hover:scale-110 transition-transform origin-left">04</span>
+                        <h4 class="font-bold text-[#0D2B1E] text-base mb-2">ONDC as a multiplier</h4>
+                        <p class="text-sm text-gray-600 leading-relaxed">Phase 2 ONDC integration turns every Minuto seller into a merchant reachable by PhonePe, Paytm, and Magicpin buyers — for free.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:border-[#D4A017] transition-all group">
+                        <span class="text-[#D4A017] font-bold text-2xl block mb-2 group-hover:scale-110 transition-transform origin-left">05</span>
+                        <h4 class="font-bold text-[#0D2B1E] text-base mb-2">Socio Commerce Seller's 1st Digital Identity</h4>
+                        <p class="text-sm text-gray-600 leading-relaxed">Giving WhatsApp and Instagram sellers a formal digital address, trust layer, and integrated payments to scale their informal business.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Why Now -->
+            <div class="bg-white border-2 border-[#1B4332] rounded-xl p-8 shadow-lg relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 opacity-5 text-9xl">&#9200;</div>
+                <h3 class="text-xs font-bold tracking-widest text-[#1B4332] uppercase mb-2">The "Why Now" Urgency Line</h3>
+                <h4 class="text-2xl font-bold text-[#0D2B1E] mb-4">"The infrastructure moment is now."</h4>
+                <p class="text-gray-700 leading-relaxed max-w-4xl relative z-10">
+                    UPI took 8 years to make digital payments mainstream. ONDC is 3 years in. 5G is reaching Tier 2 cities. Smartphone penetration just crossed 700M. The infrastructure exists. The behaviour is forming. The dominant local commerce platform does not exist yet. <span class="font-bold text-[#1E5C40]">Minuto is the answer to a question 700 million Indians are about to ask.</span>
+                </p>
+            </div>
+        </section>
+
+        <!-- TAB 1: VERTICALS -->
+        <section id="verticals" class="section-panel">
+            <div class="mb-10">
+                <h2 class="text-2xl text-[#0D2B1E] font-bold border-b-2 border-[#D8F3DC] pb-2 inline-block mb-4">The 4-Vertical Super-App Ecosystem</h2>
+                <p class="text-gray-700 max-w-4xl leading-relaxed text-lg">
+                    We bring four major verticals under one roof, one login, and one trusted brand. This is the exact playbook that built Grab, Gojek, and WeChat.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                <div class="bg-white rounded-xl p-8 border-l-4 border-[#0D2B1E] shadow-sm hover:shadow-md transition">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="text-4xl">&#128230;</div>
+                        <div>
+                            <h3 class="font-bold text-[#0D2B1E] text-xl">Minuto Pan-India</h3>
+                            <p class="text-sm font-medium text-gray-500 uppercase tracking-widest">eCommerce</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 mb-4 leading-relaxed">Marketplace for non-perishable goods shipped nationwide via courier. Competes with Meesho in Tier 2/3 cities using a zero/low commission growth hack.</p>
+                    <div class="text-xs font-bold text-[#40916C] uppercase tracking-wider bg-[#EAF7EE] inline-block px-3 py-1.5 rounded border border-[#B7E4C7]">Target Y5: 50K Sellers | ₹2,500 Cr GMV</div>
+                </div>
+
+                <div class="bg-white rounded-xl p-8 border-l-4 border-[#40916C] shadow-sm hover:shadow-md transition">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="text-4xl">&#128690;</div>
+                        <div>
+                            <h3 class="font-bold text-[#0D2B1E] text-xl">Minuto Local</h3>
+                            <p class="text-sm font-medium text-gray-500 uppercase tracking-widest">Hyperlocal Commerce</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 mb-4 leading-relaxed">Marketplace for perishables and instant needs. Highly asset-light (no dark stores)—sellers are real local neighborhood stores and home bakers.</p>
+                    <div class="text-xs font-bold text-[#40916C] uppercase tracking-wider bg-[#EAF7EE] inline-block px-3 py-1.5 rounded border border-[#B7E4C7]">Target Y5: 30K Stores | ₹1,500 Cr GMV</div>
+                </div>
+
+                <div class="bg-white rounded-xl p-8 border-l-4 border-[#D4A017] shadow-sm hover:shadow-md transition">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="text-4xl">&#128179;</div>
+                        <div>
+                            <h3 class="font-bold text-[#0D2B1E] text-xl">Minuto Pay</h3>
+                            <p class="text-sm font-medium text-gray-500 uppercase tracking-widest">Integrated Fintech</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 mb-4 leading-relaxed">Every transaction flows through Minuto Pay. Includes merchant accounts, buyer wallets, BNPL, instant payouts, and an escrow-based trust model.</p>
+                    <div class="text-xs font-bold text-[#854F0B] uppercase tracking-wider bg-[#FFF8E1] inline-block px-3 py-1.5 rounded border border-[#FAEEDA]">Target Y5: ₹10,000 Cr+ TPV</div>
+                </div>
+
+                <div class="bg-white rounded-xl p-8 border-l-4 border-[#1E5C40] shadow-sm hover:shadow-md transition">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="text-4xl">&#128119;</div>
+                        <div>
+                            <h3 class="font-bold text-[#0D2B1E] text-xl">Minuto Services</h3>
+                            <p class="text-sm font-medium text-gray-500 uppercase tracking-widest">On-Demand Services</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 mb-4 leading-relaxed">Plumbers, tailors, makeup artists, technicians. Seamlessly integrated with Minuto Pay and Minuto Local (professionals can order materials directly).</p>
+                    <div class="text-xs font-bold text-[#40916C] uppercase tracking-wider bg-[#EAF7EE] inline-block px-3 py-1.5 rounded border border-[#B7E4C7]">Target Y5: 20K Pros | ₹1,000 Cr GMV</div>
+                </div>
+            </div>
+
+            <!-- Audience Messaging -->
+            <div class="bg-[#F8F9FA] border border-[#DEE2E0] rounded-xl p-8 shadow-sm">
+                <h3 class="text-xl font-bold text-[#0D2B1E] mb-6 serif-font">Audience-Specific Messaging Arsenal</h3>
+                
+                <div class="flex space-x-2 mb-6">
+                    <button class="px-5 py-2 rounded-full text-sm font-medium bg-[#1B4332] text-white focus:outline-none audience-toggle" onclick="showAudience('buyer', this)">For Buyers</button>
+                    <button class="px-5 py-2 rounded-full text-sm font-medium bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none audience-toggle" onclick="showAudience('seller', this)">For Sellers</button>
+                    <button class="px-5 py-2 rounded-full text-sm font-medium bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none audience-toggle" onclick="showAudience('service', this)">For Service Pros</button>
+                </div>
+
+                <div id="audience-content" class="bg-white border border-[#DEE2E0] rounded-xl p-8 min-h-[200px]">
+                    <!-- Initial content loaded via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: FINANCIALS & GROWTH -->
+        <section id="financials" class="section-panel">
+            <div class="mb-8">
+                <h2 class="text-2xl text-[#0D2B1E] font-bold border-b-2 border-[#D8F3DC] pb-2 inline-block mb-4">5-Year Aggressive Growth Plan</h2>
+                <p class="text-gray-700 max-w-4xl leading-relaxed">
+                    Benchmarked against India's fastest-scaling platforms (Meesho, Urban Company, Zepto). Targets updated based on rigorous unit economic modeling: 100,000 partners, ₹8,000 Cr+ combined merchandise GMV, and reaching EBITDA profitability by Year 5.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                    <h3 class="text-lg font-bold text-[#0D2B1E] mb-2">Partner Network Growth (Y1 - Y5)</h3>
+                    <p class="text-xs text-gray-500 mb-4">Total target: 100,000 partners across 80+ cities.</p>
+                    <div class="chart-container">
+                        <canvas id="partnerChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                    <h3 class="text-lg font-bold text-[#0D2B1E] mb-2">Combined GMV Projection (₹ Crores)</h3>
+                    <p class="text-xs text-gray-500 mb-4">Excludes Minuto Pay TPV. Highlights ₹8,000 Cr Stretch Target.</p>
+                    <div class="chart-container">
+                        <canvas id="gmvChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financial Table Summary -->
+            <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm mb-12">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead class="bg-[#1B4332] text-white">
+                        <tr>
+                            <th class="p-4 font-medium">Metric</th>
+                            <th class="p-4 font-medium">Year 2 (Soft)</th>
+                            <th class="p-4 font-medium">Year 3 (Series A)</th>
+                            <th class="p-4 font-medium">Year 4 (Scale)</th>
+                            <th class="p-4 font-medium">Year 5 (National)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-4 font-bold text-[#0D2B1E]">Total Partners</td>
+                            <td class="p-4">500</td>
+                            <td class="p-4">10,000</td>
+                            <td class="p-4">40,000</td>
+                            <td class="p-4 font-bold text-[#40916C] bg-[#EAF7EE]/50">100,000</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-4 font-bold text-[#0D2B1E]">Cities</td>
+                            <td class="p-4">4 - 5</td>
+                            <td class="p-4">20+</td>
+                            <td class="p-4">50+</td>
+                            <td class="p-4 font-bold text-[#40916C] bg-[#EAF7EE]/50">80+</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-4 font-bold text-[#0D2B1E]">Gross Revenue</td>
+                            <td class="p-4">₹0.96 Cr</td>
+                            <td class="p-4">₹18.15 Cr</td>
+                            <td class="p-4">₹169 Cr</td>
+                            <td class="p-4 font-bold text-[#40916C] bg-[#EAF7EE]/50">₹750 Cr</td>
+                        </tr>
+                        <tr class="bg-[#EAF7EE] font-medium border-t-2 border-[#B7E4C7]">
+                            <td class="p-4 text-[#1E5C40]">EBITDA</td>
+                            <td class="p-4 text-red-600">(₹1.14 Cr)</td>
+                            <td class="p-4 text-red-600">(₹1.85 Cr)</td>
+                            <td class="p-4 text-red-600">(₹6 Cr)</td>
+                            <td class="p-4 font-bold text-[#1E5C40] text-base">₹87 Cr <span class="text-xs font-normal text-gray-500">(11.6% Margin)</span></td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-4 font-bold text-[#0D2B1E]">Funding Required</td>
+                            <td class="p-4 text-gray-600">₹1.5 Cr (Angel)</td>
+                            <td class="p-4 text-gray-600">₹50-55 Cr (Series A)</td>
+                            <td class="p-4 text-gray-600">₹150-200 Cr (Series B)</td>
+                            <td class="p-4 font-bold text-[#40916C] bg-[#EAF7EE]/50">₹750-1,000 Cr (Series C)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Industry Benchmarks Table -->
+            <div class="mb-4">
+                <h3 class="text-xl font-bold text-[#0D2B1E] mb-4 uppercase tracking-wider">Why These Numbers Are Achievable — Industry Benchmarks</h3>
+            </div>
+            <div class="bg-white rounded-xl border border-gray-200 overflow-x-auto shadow-sm">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead class="bg-[#1B4332] text-white">
+                        <tr>
+                            <th class="p-4 font-medium">Platform</th>
+                            <th class="p-4 font-medium">Vertical</th>
+                            <th class="p-4 font-medium">Year 1</th>
+                            <th class="p-4 font-medium">Year 3</th>
+                            <th class="p-4 font-medium">Year 5 / Peak</th>
+                            <th class="p-4 font-medium">Key Metric</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-4 font-bold text-[#0D2B1E]">Meesho</td>
+                            <td class="p-4 text-gray-700">Pan-India eComm</td>
+                            <td class="p-4 text-gray-700">~10K sellers</td>
+                            <td class="p-4 text-gray-700">2,00,000 sellers</td>
+                            <td class="p-4 text-gray-700">1.2M+ sellers</td>
+                            <td class="p-4 font-medium text-gray-700">$7–8B GMV</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-4 font-bold text-[#0D2B1E]">Blinkit</td>
+                            <td class="p-4 text-gray-700">Hyperlocal</td>
+                            <td class="p-4 text-gray-700">~50 stores</td>
+                            <td class="p-4 text-gray-700">~400 stores</td>
+                            <td class="p-4 text-gray-700">1,816 stores</td>
+                            <td class="p-4 font-medium text-gray-700">₹40,000+ Cr GOV</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-4 font-bold text-[#0D2B1E]">Zepto</td>
+                            <td class="p-4 text-gray-700">Hyperlocal</td>
+                            <td class="p-4 text-gray-700">Few cities</td>
+                            <td class="p-4 text-gray-700">~700 stores</td>
+                            <td class="p-4 text-gray-700">1,000+ stores</td>
+                            <td class="p-4 font-medium text-gray-700">₹11,110 Cr revenue</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-4 font-bold text-[#0D2B1E]">Urban Company</td>
+                            <td class="p-4 text-gray-700">Home Services</td>
+                            <td class="p-4 text-gray-700">~1,000 pros</td>
+                            <td class="p-4 text-gray-700">~10,000 pros</td>
+                            <td class="p-4 text-gray-700">57,000 partners</td>
+                            <td class="p-4 font-medium text-gray-700">₹1,144 Cr FY25</td>
+                        </tr>
+                        <tr class="bg-[#EAF7EE] border-t-2 border-[#B7E4C7]">
+                            <td class="p-4 font-bold text-[#1E5C40] text-base">Minuto Target</td>
+                            <td class="p-4 font-bold text-[#1E5C40]">4 Verticals</td>
+                            <td class="p-4 font-bold text-[#1E5C40]">150 partners</td>
+                            <td class="p-4 font-bold text-[#1E5C40]">10,000 partners</td>
+                            <td class="p-4 font-bold text-[#1E5C40]">1,00,000 partners</td>
+                            <td class="p-4 font-bold text-[#1E5C40]">₹5–8K Cr GMV</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="p-4 bg-gray-50 border-t border-gray-200 text-center text-sm text-gray-600 italic">
+                    Minuto's target of 1,00,000 partners is ~8% of Meesho's scale — achievable in 5 years with a four-vertical cross-sell flywheel.
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: KEY DIFFERENTIATOR -->
+        <section id="differentiator" class="section-panel">
+            
+            <!-- The Competitive Wedge & The Ultimate Question -->
+            <div class="mb-12">
+                <h2 class="text-2xl text-[#0D2B1E] font-bold border-b-2 border-[#D8F3DC] pb-2 inline-block mb-4 uppercase tracking-wider">The Competitive Wedge</h2>
+                <p class="text-gray-700 max-w-4xl leading-relaxed text-lg mb-8 italic">
+                    "Swiggy does food. Blinkit does groceries. Urban Company does services. Amazon does products. Nobody does all of it, locally, in one place. That gap is Minuto."
+                </p>
+
+                <div class="bg-[#F8F9FA] border border-[#DEE2E0] rounded-xl p-8 shadow-sm">
+                    <h3 class="text-xl font-bold text-[#0D2B1E] mb-6 serif-font text-center md:text-left">The Ultimate Question: "If this works, who competes with you?"</h3>
+                    <p class="text-gray-700 leading-relaxed mb-6 font-medium">The honest answer:</p>
+                    
+                    <div class="space-y-4">
+                        <div class="flex flex-col md:flex-row md:items-start gap-4 p-5 bg-white rounded-lg border border-gray-100 shadow-sm">
+                            <div class="bg-gray-100 px-4 py-2 rounded font-bold text-[#0D2B1E] min-w-[160px] text-center border border-gray-200">Amazon / Flipkart</div>
+                            <p class="text-gray-600 text-sm md:text-base leading-relaxed">Could theoretically build this, but they won't — their model depends on warehouses and courier networks, not hyperlocal seller relationships.</p>
+                        </div>
+                        <div class="flex flex-col md:flex-row md:items-start gap-4 p-5 bg-white rounded-lg border border-gray-100 shadow-sm">
+                            <div class="bg-[#EAF7EE] px-4 py-2 rounded font-bold text-[#1E5C40] min-w-[160px] text-center border border-[#B7E4C7]">Blinkit / Zepto</div>
+                            <p class="text-gray-600 text-sm md:text-base leading-relaxed">Could expand into services, but their dark-store model is the complete opposite of an asset-light merchant network.</p>
+                        </div>
+                        <div class="flex flex-col md:flex-row md:items-start gap-4 p-5 bg-white rounded-lg border border-gray-100 shadow-sm">
+                            <div class="bg-[#FFF8E1] px-4 py-2 rounded font-bold text-[#854F0B] min-w-[160px] text-center border border-[#FAEEDA]">Urban Company</div>
+                            <p class="text-gray-600 text-sm md:text-base leading-relaxed">Could add goods, but their highly-curated tech stack and unit economics aren't built for high-frequency commerce.</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 p-6 bg-[#0D2B1E] rounded-lg shadow-inner border-l-4 border-[#D4A017]">
+                        <p class="text-[#D8F3DC] font-bold text-lg md:text-xl text-center leading-relaxed serif-font italic">
+                            "Nobody is positioned to build what Minuto is building — because they're all too committed to what they already are."
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-12">
+                <h3 class="text-xl font-bold text-[#1B4332] mb-6 uppercase tracking-wider">The Competitive Landscape</h3>
+            </div>
+
+            <!-- Competitive Matrix -->
+            <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm mb-12">
+                <table class="w-full text-sm text-center border-collapse">
+                    <thead>
+                        <tr>
+                            <th class="p-4 text-left font-bold text-white bg-[#1B4332] w-1/4">Feature</th>
+                            <th class="p-4 font-bold text-white bg-[#1B4332]">Blinkit</th>
+                            <th class="p-4 font-bold text-white bg-[#1B4332]">Zepto</th>
+                            <th class="p-4 font-bold text-white bg-[#1B4332]">Meesho</th>
+                            <th class="p-4 font-bold text-white bg-[#1B4332]">Urban Co.</th>
+                            <th class="p-4 font-bold text-white bg-[#1B4332]">Amazon/FK</th>
+                            <th class="p-4 font-bold text-white bg-[#40916C]">MINUTO ✓</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-4 text-left font-bold text-[#0D2B1E]">Pan-India eCommerce</td>
+                            <td class="p-4 text-red-500 text-xl font-bold">✕</td>
+                            <td class="p-4 text-red-500 text-xl font-bold">✕</td>
+                            <td class="p-4 text-green-600 text-xl font-bold">✓</td>
+                            <td class="p-4 text-red-500 text-xl font-bold">✕</td>
+                            <td class="p-4 text-green-600 text-xl font-bold">✓</td>
+                            <td class="p-4 text-[#1E5C40] text-xl font-bold bg-[#EAF7EE]/50">✓</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50 bg-gray-50/50">
+                            <td class="p-4 text-left font-bold text-[#0D2B1E]">Hyperlocal Delivery</td>
+                            <td class="p-4 text-green-600 text-xl font-bold">✓</td>
+                            <td class="p-4 text-green-600 text-xl font-bold">✓</td>
+                            <td class="p-4 text-red-500 text-xl font-bold">✕</td>
+                            <td class="p-4 text-red-500 text-xl font-bold">✕</td>
+                            <td class="p-4 text-yellow-500 text-xl font-bold">~</td>
+                            <td class="p-4 text-[#1E5C40] text-xl font-bold bg-[#EAF7EE]/50">✓</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-4 text-left font-bold text-[#0D2B1E]">On-Demand Services</td>
+                            <td class="p-4 text-red-500 text-xl font-bold">✕</td>
+                            <td class="p-4 text-red-500 text-xl font-bold">✕</td>
+                            <td class="p-4 text-red-500 text-xl font-bold">✕</td>
+                            <td class="p-4 text-green-600 text-xl font-bold">✓</td>
+                            <td class="p-4 text-red-500 text-xl font-bold">✕</td>
+                            <td class="p-4 text-[#1E5C40] text-xl font-bold bg-[#EAF7EE]/50">✓</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50 bg-gray-50/50">
+                            <td class="p-4 text-left font-bold text-[#0D2B1E]">Integrated Fintech/Pay</td>
+                            <td class="p-4 text-red-500 text-xl font-bold">✕</td>
+                            <td class="p-4 text-red-500 text-xl font-bold">✕</td>
+                            <td class="p-4 text-red-500 text-xl font-bold">✕</td>
+                            <td class="p-4 text-red-500 text-xl font-bold">✕</td>
+                            <td class="p-4 text-yellow-500 text-xl font-bold">~</td>
+                            <td class="p-4 text-[#1E5C40] text-xl font-bold bg-[#EAF7EE]/50">✓</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-4 text-left font-bold text-[#0D2B1E]">Real Local Stores</td>
+                            <td class="p-4 text-red-500 text-xl font-bold">✕</td>
+                            <td class="p-4 text-red-500 text-xl font-bold">✕</td>
+                            <td class="p-4 text-red-500 text-xl font-bold">✕</td>
+                            <td class="p-4 text-red-500 text-xl font-bold">✕</td>
+                            <td class="p-4 text-red-500 text-xl font-bold">✕</td>
+                            <td class="p-4 text-[#1E5C40] text-xl font-bold bg-[#EAF7EE]/50">✓</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50 bg-gray-50/50">
+                            <td class="p-4 text-left font-bold text-[#0D2B1E]">Tier 2/3 City Focus</td>
+                            <td class="p-4 text-red-500 text-xl font-bold">✕</td>
+                            <td class="p-4 text-red-500 text-xl font-bold">✕</td>
+                            <td class="p-4 text-yellow-500 text-xl font-bold">~</td>
+                            <td class="p-4 text-red-500 text-xl font-bold">✕</td>
+                            <td class="p-4 text-yellow-500 text-xl font-bold">~</td>
+                            <td class="p-4 text-[#1E5C40] text-xl font-bold bg-[#EAF7EE]/50">✓</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-4 text-left font-bold text-[#0D2B1E]">Seller Working Capital</td>
+                            <td class="p-4 text-red-500 text-xl font-bold">✕</td>
+                            <td class="p-4 text-red-500 text-xl font-bold">✕</td>
+                            <td class="p-4 text-red-500 text-xl font-bold">✕</td>
+                            <td class="p-4 text-yellow-500 text-xl font-bold">~</td>
+                            <td class="p-4 text-red-500 text-xl font-bold">✕</td>
+                            <td class="p-4 text-[#1E5C40] text-xl font-bold bg-[#EAF7EE]/50">✓</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="p-3 text-center text-xs text-gray-500 bg-white">
+                    ✓ Full capability &nbsp;&nbsp; ~ Partial &nbsp;&nbsp; ✕ None &nbsp;&nbsp; | &nbsp;&nbsp; Minuto is the ONLY platform that does all eight.
+                </div>
+            </div>
+
+            <!-- KEY DIFFERENTIATORS — STRUCTURAL -->
+            <div class="mb-12">
+                <h3 class="text-xl font-bold text-[#1B4332] mb-6 uppercase tracking-wider">KEY DIFFERENTIATORS — STRUCTURAL</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white border border-gray-200 rounded flex flex-col h-full shadow-sm">
+                        <div class="p-6 flex-grow">
+                            <h4 class="text-4xl font-bold text-[#1E5C40] mb-4">01</h4>
+                            <h5 class="text-lg font-bold text-[#0D2B1E] mb-4">Four Verticals. One Platform.</h5>
+                            <p class="text-sm text-gray-600 leading-relaxed">Every competitor owns ONE vertical and is structurally locked in. Blinkit can't add services. Urban Company can't do ecommerce. Minuto was architected from Day 1 to run all four simultaneously — a structural moat that cannot be copied without rebuilding from scratch.</p>
+                        </div>
+                        <div class="bg-[#EAF7EE] p-4 text-center text-xs text-[#1E5C40] italic border-t border-gray-200">
+                            No competitor has attempted this in India
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-gray-200 rounded flex flex-col h-full shadow-sm">
+                        <div class="p-6 flex-grow">
+                            <h4 class="text-4xl font-bold text-[#1E5C40] mb-4">02</h4>
+                            <h5 class="text-lg font-bold text-[#0D2B1E] mb-4">Real Local Stores — Zero Dark Store Capex</h5>
+                            <p class="text-sm text-gray-600 leading-relaxed">Blinkit &amp; Zepto spend crores leasing metro dark stores. Their model breaks in Tier 2/3. Minuto uses existing kiranas, home bakers &amp; street vendors as fulfilment nodes — zero warehouse cost, infinite scalability. Coimbatore, Indore, Madurai are Minuto's markets, not Blinkit's.</p>
+                        </div>
+                        <div class="bg-[#EAF7EE] p-4 text-center text-xs text-[#1E5C40] italic border-t border-gray-200">
+                            Asset-light model that scales to 80+ cities
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-gray-200 rounded flex flex-col h-full shadow-sm">
+                        <div class="p-6 flex-grow">
+                            <h4 class="text-4xl font-bold text-[#1E5C40] mb-4">03</h4>
+                            <h5 class="text-lg font-bold text-[#0D2B1E] mb-4">The Cross-Sell Flywheel</h5>
+                            <p class="text-sm text-gray-600 leading-relaxed">A buyer orders on Minuto Local → books a plumber on Minuto Services → paid via Minuto Pay → seller gets a working capital loan. No competitor has a cross-vertical data and revenue loop. Minuto's CAC spreads across 4 revenue streams. Competitors pay full CAC for one.</p>
+                        </div>
+                        <div class="bg-[#EAF7EE] p-4 text-center text-xs text-[#1E5C40] italic border-t border-gray-200">
+                            Every user action compounds revenue across verticals
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KEY DIFFERENTIATORS — MARKET GAPS -->
+            <div class="mb-12">
+                <h3 class="text-xl font-bold text-[#1B4332] mb-6 uppercase tracking-wider">KEY DIFFERENTIATORS — MARKET GAPS</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white border border-gray-200 border-l-8 border-l-[#1E5C40] rounded flex flex-col h-full shadow-sm">
+                        <div class="p-6 flex-grow">
+                            <h5 class="text-lg font-bold text-[#0D2B1E] mb-4">Tier 2/3 City Ownership</h5>
+                            <p class="text-sm text-gray-600 leading-relaxed">Amazon &amp; Flipkart are metro-first expanding downward. Blinkit &amp; Zepto are metro-ONLY. Minuto starts in Coimbatore and expands outward — building trust and network density before the giants arrive.</p>
+                        </div>
+                        <div class="bg-[#EAF7EE] p-4 text-center text-xs font-bold text-[#1E5C40]">
+                            500M next buyers are in Tier 2/3 cities
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-gray-200 border-l-8 border-l-[#1E5C40] rounded flex flex-col h-full shadow-sm">
+                        <div class="p-6 flex-grow">
+                            <h5 class="text-lg font-bold text-[#0D2B1E] mb-4">The 6 Crore Micro-Business Layer</h5>
+                            <p class="text-sm text-gray-600 leading-relaxed">India has 6+ crore unorganised micro-businesses. The local tailor, home baker, AC repair technician, wedding photographer. Nobody serves them all under one platform with integrated payments.</p>
+                        </div>
+                        <div class="bg-[#EAF7EE] p-4 text-center text-xs font-bold text-[#1E5C40]">
+                            6 Crore+ addressable partners — unclaimed
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-gray-200 border-l-8 border-l-[#1E5C40] rounded flex flex-col h-full shadow-sm">
+                        <div class="p-6 flex-grow">
+                            <h5 class="text-lg font-bold text-[#0D2B1E] mb-4">Vernacular &amp; Voice Native</h5>
+                            <p class="text-sm text-gray-600 leading-relaxed">Every major platform built in English and bolted on regional languages. Minuto starts Tamil-first in Coimbatore — WhatsApp onboarding, voice search baked in from Day 1, not bolted on later.</p>
+                        </div>
+                        <div class="bg-[#EAF7EE] p-4 text-center text-xs font-bold text-[#1E5C40]">
+                            25–30% of new users prefer vernacular UX
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-gray-200 border-l-8 border-l-[#1E5C40] rounded flex flex-col h-full shadow-sm">
+                        <div class="p-6 flex-grow">
+                            <h5 class="text-lg font-bold text-[#0D2B1E] mb-4">Multi-Stream Revenue Per Partner</h5>
+                            <p class="text-sm text-gray-600 leading-relaxed">A hardware store earns from products AND installation services AND working capital loans — all through Minuto. Competitors earn one stream per partner. Minuto earns three from the same relationship.</p>
+                        </div>
+                        <div class="bg-[#EAF7EE] p-4 text-center text-xs font-bold text-[#1E5C40]">
+                            3x revenue per partner vs any competitor
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: USP'S -->
+        <section id="usps" class="section-panel">
+            
+            <!-- 10 UNIQUE USPs -->
+            <div class="mb-12">
+                <h2 class="text-2xl text-[#0D2B1E] font-bold border-b-2 border-[#D8F3DC] pb-2 inline-block mb-6 uppercase tracking-wider">10 UNIQUE USPs — MINUTO vs THE ENTIRE MARKET</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <div class="bg-white border-t-8 border-[#1B4332] p-5 rounded shadow-sm hover:shadow-md transition">
+                        <span class="text-3xl font-bold text-[#1B4332] block mb-2">01</span>
+                        <h4 class="font-bold text-[#0D2B1E] text-sm mb-2">Hyperlocal Demand Intelligence</h4>
+                        <p class="text-xs text-gray-600">Neighbourhood-level demand data tells local stores what to stock before spikes. Uncopyable insights.</p>
+                    </div>
+                    <div class="bg-white border-t-8 border-[#1B4332] p-5 rounded shadow-sm hover:shadow-md transition">
+                        <span class="text-3xl font-bold text-[#1B4332] block mb-2">02</span>
+                        <h4 class="font-bold text-[#0D2B1E] text-sm mb-2">72-Hour Dispute Resolution, Guaranteed</h4>
+                        <p class="text-xs text-gray-600">Escrow-based trust model ensures both buyers and sellers are protected with rapid resolutions.</p>
+                    </div>
+                    <div class="bg-white border-t-8 border-[#1B4332] p-5 rounded shadow-sm hover:shadow-md transition">
+                        <span class="text-3xl font-bold text-[#1B4332] block mb-2">03</span>
+                        <h4 class="font-bold text-[#0D2B1E] text-sm mb-2">The Socio-commerce Seller's 1st Digital Identity</h4>
+                        <p class="text-xs text-gray-600">Formalizing WhatsApp and Instagram sellers with a digital address, reviews, and integrated payments.</p>
+                    </div>
+                    <div class="bg-white border-t-8 border-[#1B4332] p-5 rounded shadow-sm hover:shadow-md transition">
+                        <span class="text-3xl font-bold text-[#1B4332] block mb-2">04</span>
+                        <h4 class="font-bold text-[#0D2B1E] text-sm mb-2">Seller SLA Transparency Shown to Buyers</h4>
+                        <p class="text-xs text-gray-600">Real-time performance and reliability metrics displayed upfront, building immediate trust.</p>
+                    </div>
+                    <div class="bg-white border-t-8 border-[#1B4332] p-5 rounded shadow-sm hover:shadow-md transition">
+                        <span class="text-3xl font-bold text-[#1B4332] block mb-2">05</span>
+                        <h4 class="font-bold text-[#0D2B1E] text-sm mb-2">Cross-Sell Flywheel</h4>
+                        <p class="text-xs text-gray-600">Every transaction feeds 3 other verticals. A grocery buyer books a plumber. CAC spreads across 4 streams.</p>
+                    </div>
+                    <div class="bg-white border-t-8 border-[#1B4332] p-5 rounded shadow-sm hover:shadow-md transition">
+                        <span class="text-3xl font-bold text-[#1B4332] block mb-2">06</span>
+                        <h4 class="font-bold text-[#0D2B1E] text-sm mb-2">Tier 2/3 First Strategy</h4>
+                        <p class="text-xs text-gray-600">Building network density and trust in markets the metro-focused giants ignore.</p>
+                    </div>
+                    <div class="bg-white border-t-8 border-[#1B4332] p-5 rounded shadow-sm hover:shadow-md transition">
+                        <span class="text-3xl font-bold text-[#1B4332] block mb-2">07</span>
+                        <h4 class="font-bold text-[#0D2B1E] text-sm mb-2">ONDC-Native Distribution</h4>
+                        <p class="text-xs text-gray-600">Every Minuto seller instantly becomes discoverable on PhonePe, Paytm, and across the open network.</p>
+                    </div>
+                    <div class="bg-white border-t-8 border-[#1B4332] p-5 rounded shadow-sm hover:shadow-md transition">
+                        <span class="text-3xl font-bold text-[#1B4332] block mb-2">08</span>
+                        <h4 class="font-bold text-[#0D2B1E] text-sm mb-2">Vernacular &amp; Voice Native</h4>
+                        <p class="text-xs text-gray-600">Built for India. Tamil/Hindi first, with native voice search integrated from Day 1, not bolted on later.</p>
+                    </div>
+                    <div class="bg-white border-t-8 border-[#1B4332] p-5 rounded shadow-sm hover:shadow-md transition">
+                        <span class="text-3xl font-bold text-[#1B4332] block mb-2">09</span>
+                        <h4 class="font-bold text-[#0D2B1E] text-sm mb-2">Zero Commission to Partners</h4>
+                        <p class="text-xs text-gray-600">Eliminating friction to onboard 100,000 partners rapidly, replicating the hyper-growth playbook.</p>
+                    </div>
+                    <div class="bg-white border-t-8 border-[#1B4332] p-5 rounded shadow-sm hover:shadow-md transition">
+                        <span class="text-3xl font-bold text-[#1B4332] block mb-2">10</span>
+                        <h4 class="font-bold text-[#0D2B1E] text-sm mb-2">Customers satisfaction first</h4>
+                        <p class="text-xs text-gray-600">A unified, reliable support layer across goods, services, and payments—replacing fragmented chats.</p>
+                    </div>
+                </div>
+            </div>
+
+            
+        </section>
+
+        <!-- TAB 5: FUTURE 2030 (Now the last tab) -->
+        <section id="future2030" class="section-panel">
+            <div class="mb-10">
+                <h2 class="text-2xl text-[#0D2B1E] font-bold border-b-2 border-[#D8F3DC] pb-2 inline-block mb-4 uppercase tracking-wider">Where eCommerce Will Be By 2030</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div class="bg-[#EAF7EE] border border-[#B7E4C7] p-6 text-center rounded shadow-sm">
+                    <h3 class="text-4xl font-bold text-[#1B4332] mb-2">$345B</h3>
+                    <p class="text-sm text-[#1E5C40]">India eCommerce<br>market by 2030</p>
+                </div>
+                <div class="bg-[#EAF7EE] border border-[#B7E4C7] p-6 text-center rounded shadow-sm">
+                    <h3 class="text-4xl font-bold text-[#1B4332] mb-2">$13B+</h3>
+                    <p class="text-sm text-[#1E5C40]">Hyperlocal market<br>by 2029 (40% CAGR)</p>
+                </div>
+                <div class="bg-[#EAF7EE] border border-[#B7E4C7] p-6 text-center rounded shadow-sm">
+                    <h3 class="text-4xl font-bold text-[#1B4332] mb-2">$20B</h3>
+                    <p class="text-sm text-[#1E5C40]">Home Services<br>market by 2030</p>
+                </div>
+                <div class="bg-[#EAF7EE] border border-[#B7E4C7] p-6 text-center rounded shadow-sm">
+                    <h3 class="text-4xl font-bold text-[#1B4332] mb-2">~50%</h3>
+                    <p class="text-sm text-[#1E5C40]">Online shoppers using<br>AI agents by 2030</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+                <div class="bg-white border border-gray-200 p-6 rounded shadow-sm">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-8 h-8 rounded-full bg-[#1B4332] text-white flex items-center justify-center font-bold">1</div>
+                        <h4 class="font-bold text-[#0D2B1E]">Agentic Commerce</h4>
+                    </div>
+                    <p class="text-sm text-gray-600 leading-relaxed">AI agents will autonomously reorder groceries, book services, compare prices. Platforms with open APIs for AI agents will capture 25%+ of GMV by 2030.</p>
+                </div>
+                <div class="bg-white border border-gray-200 p-6 rounded shadow-sm">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-8 h-8 rounded-full bg-[#1B4332] text-white flex items-center justify-center font-bold">2</div>
+                        <h4 class="font-bold text-[#0D2B1E]">ONDC as Infrastructure</h4>
+                    </div>
+                    <p class="text-sm text-gray-600 leading-relaxed">India's Open Network will be the backbone of all local commerce by 2027. Platforms that aren't ONDC-native will lose distribution to those that are.</p>
+                </div>
+                <div class="bg-white border border-gray-200 p-6 rounded shadow-sm">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-8 h-8 rounded-full bg-[#1B4332] text-white flex items-center justify-center font-bold">3</div>
+                        <h4 class="font-bold text-[#0D2B1E]">Vernacular Internet</h4>
+                    </div>
+                    <p class="text-sm text-gray-600 leading-relaxed">300M+ new ecommerce users by 2030 will be vernacular-first. Voice commerce, regional UX, and WhatsApp-native journeys dominate Tier 2/3.</p>
+                </div>
+                <div class="bg-white border border-gray-200 p-6 rounded shadow-sm">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-8 h-8 rounded-full bg-[#1B4332] text-white flex items-center justify-center font-bold">4</div>
+                        <h4 class="font-bold text-[#0D2B1E]">AR/VR Shopping</h4>
+                    </div>
+                    <p class="text-sm text-gray-600 leading-relaxed">AR in ecommerce grows to $38.5B by 2030 (35.8% CAGR). Visualise furniture at home. Preview repainted walls before booking a service.</p>
+                </div>
+                <div class="bg-white border border-gray-200 p-6 rounded shadow-sm">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-8 h-8 rounded-full bg-[#1B4332] text-white flex items-center justify-center font-bold">5</div>
+                        <h4 class="font-bold text-[#0D2B1E]">AI Demand Intelligence</h4>
+                    </div>
+                    <p class="text-sm text-gray-600 leading-relaxed">Hyperlocal AI will predict stock needs at neighbourhood level, cutting waste by 30–50%. Platforms with city-level data outperform national averages.</p>
+                </div>
+                <div class="bg-white border border-gray-200 p-6 rounded shadow-sm">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-8 h-8 rounded-full bg-[#1B4332] text-white flex items-center justify-center font-bold">6</div>
+                        <h4 class="font-bold text-[#0D2B1E]">Commerce Infrastructure</h4>
+                    </div>
+                    <p class="text-sm text-gray-600 leading-relaxed">Winners won't be where people shop — they'll be the invisible layer local businesses can't operate without. Payments + lending + supply chain = irreplaceable.</p>
+                </div>
+            </div>
+
+            <div class="mb-10">
+                <h2 class="text-2xl text-[#0D2B1E] font-bold border-b-2 border-[#D8F3DC] pb-2 inline-block mb-4 uppercase tracking-wider">Minuto's Position By 2030</h2>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-white border-t-8 border-[#1E5C40] p-8 rounded shadow-md">
+                    <h3 class="text-2xl font-bold text-[#1B4332] mb-6">From Marketplace to Infrastructure</h3>
+                    <ul class="space-y-6">
+                        <li class="flex gap-4">
+                            <div class="w-8 h-8 rounded-full bg-[#1E5C40] text-white flex items-center justify-center font-bold flex-shrink-0">1</div>
+                            <p class="text-sm text-gray-700 pt-1">Minuto Pay becomes the financial OS for 1 lakh+ local businesses — payments, loans, insurance, GST invoicing</p>
+                        </li>
+                        <li class="flex gap-4">
+                            <div class="w-8 h-8 rounded-full bg-[#1E5C40] text-white flex items-center justify-center font-bold flex-shrink-0">2</div>
+                            <p class="text-sm text-gray-700 pt-1">Minuto Local AI predicts neighbourhood demand — local stores literally can't manage stock without it</p>
+                        </li>
+                        <li class="flex gap-4">
+                            <div class="w-8 h-8 rounded-full bg-[#1E5C40] text-white flex items-center justify-center font-bold flex-shrink-0">3</div>
+                            <p class="text-sm text-gray-700 pt-1">Minuto Services is the digital identity for 20,000 service professionals — reviews, income, taxes, tools</p>
+                        </li>
+                        <li class="flex gap-4">
+                            <div class="w-8 h-8 rounded-full bg-[#1E5C40] text-white flex items-center justify-center font-bold flex-shrink-0">4</div>
+                            <p class="text-sm text-gray-700 pt-1">ONDC integration makes every Minuto partner discoverable across India's entire open commerce network</p>
+                        </li>
+                        <li class="flex gap-4">
+                            <div class="w-8 h-8 rounded-full bg-[#1E5C40] text-white flex items-center justify-center font-bold flex-shrink-0">5</div>
+                            <p class="text-sm text-gray-700 pt-1">Series C / Pre-IPO by Y5 at ₹7,500 Cr valuation — comparable to Urban Company's IPO trajectory</p>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="bg-[#EAF7EE] p-5 rounded border border-[#B7E4C7]">
+                        <h4 class="text-2xl font-bold text-[#1B4332] mb-1">1,00,000</h4>
+                        <p class="text-sm text-gray-700">Partners across 80+ cities</p>
+                    </div>
+                    <div class="bg-[#EAF7EE] p-5 rounded border border-[#B7E4C7]">
+                        <h4 class="text-2xl font-bold text-[#1B4332] mb-1">₹5,000–8,000 Cr</h4>
+                        <p class="text-sm text-gray-700">Combined GMV</p>
+                    </div>
+                    <div class="bg-[#EAF7EE] p-5 rounded border border-[#B7E4C7]">
+                        <h4 class="text-2xl font-bold text-[#1B4332] mb-1">₹87 Cr</h4>
+                        <p class="text-sm text-gray-700">EBITDA — profitable</p>
+                    </div>
+                    <div class="bg-[#EAF7EE] p-5 rounded border border-[#B7E4C7]">
+                        <h4 class="text-2xl font-bold text-[#1B4332] mb-1">₹7,500 Cr</h4>
+                        <p class="text-sm text-gray-700">Implied valuation (10x revenue)</p>
+                    </div>
+                    <div class="bg-[#EAF7EE] p-5 rounded border border-[#B7E4C7]">
+                        <h4 class="text-2xl font-bold text-[#1B4332] mb-1">~0.8%</h4>
+                        <p class="text-sm text-gray-700">Of combined $100B+ TAM</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 py-8 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
+            <div class="font-bold text-[#0D2B1E] serif-font text-xl mb-2 md:mb-0">Minuto</div>
+            <div>Integrated Master Dashboard &nbsp;•&nbsp; Updated Financials 2026</div>
+            <div>Minuto Technologies Pvt. Ltd.</div>
+        </div>
+    </footer>
+
+    <!-- 🤖 FLOATING AI WIDGET BUTTON 🤖 -->
+    <button onclick="toggleAiModal()" class="fixed bottom-6 right-6 z-[60] bg-[#1E5C40] hover:bg-[#0D2B1E] text-white rounded-full w-14 h-14 flex items-center justify-center shadow-2xl hover:scale-110 transition-all duration-300 group focus:outline-none focus:ring-4 focus:ring-[#D4A017]">
+        <span class="text-2xl group-hover:animate-bounce">🤖</span>
+        <span class="absolute -top-1 -right-1 bg-[#D4A017] text-[#0D2B1E] text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse border border-[#0D2B1E]">AI</span>
+    </button>
+
+    <!-- 🤖 FLOATING AI MODAL WINDOW 🤖 -->
+    <div id="ai-bot-modal" class="fixed bottom-24 right-6 z-[60] w-[420px] max-w-[calc(100vw-3rem)] bg-white rounded-2xl shadow-2xl border border-[#C5DDD0] flex-col hidden transform origin-bottom-right">
+        
+        <!-- Modal Header -->
+        <div class="bg-gradient-to-r from-[#0D2B1E] to-[#1B4332] p-4 text-white flex justify-between items-center border-b-4 border-[#D4A017] rounded-t-2xl">
+            <div class="flex items-center gap-3">
+                <span class="text-2xl bg-white/10 p-1.5 rounded-full">✨</span>
+                <div>
+                    <h3 class="font-bold serif-font text-lg leading-tight">Minuto AI Core</h3>
+                    <p class="text-[10px] text-[#B7E4C7] uppercase tracking-widest font-bold">Phase 3 Live Prototype</p>
+                </div>
+            </div>
+            <button onclick="toggleAiModal()" class="text-[#B7E4C7] hover:text-white text-3xl leading-none focus:outline-none">×</button>
+        </div>
+        
+        <!-- Modal Body (AI Demos) -->
+        <div class="p-5 max-h-[65vh] overflow-y-auto">
+            
+            <!-- Tab Buttons -->
+            <div class="flex space-x-1 mb-5 bg-gray-100 p-1 rounded-lg">
+                <button class="ai-demo-btn active flex-1 py-2 rounded-md text-xs font-bold bg-[#1E5C40] text-white transition-colors" onclick="switchAiDemo('buyer', this)">🛒 Buyer Planner</button>
+                <button class="ai-demo-btn flex-1 py-2 rounded-md text-xs font-bold text-gray-600 hover:bg-gray-200 transition-colors" onclick="switchAiDemo('merchant', this)">🏪 Merchant Assist</button>
+            </div>
+
+            <!-- Buyer Panel -->
+            <div id="ai-buyer" class="ai-demo-panel">
+                <p class="text-xs text-gray-600 mb-3 border-l-2 border-[#1E5C40] pl-2"><strong>Scenario:</strong> Enter a complex life task. Watch the AI auto-map actions across Minuto's 4 verticals.</p>
+                <textarea id="buyer-prompt" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#40916C] outline-none text-sm shadow-inner resize-none" rows="3" placeholder="e.g., Plan a 5th birthday party for my daughter this Saturday. We have 20 kids coming..."></textarea>
+                <button onclick="runBuyerAI(this)" class="w-full mt-3 bg-[#D4A017] hover:bg-[#BA7517] text-[#0D2B1E] font-bold py-2.5 rounded-lg transition-colors text-sm flex items-center justify-center gap-2 shadow-sm">
+                    ✨ Generate Action Plan
+                </button>
+                <div id="buyer-result" class="mt-4 hidden bg-[#F8F9FA] border border-[#DEE2E0] rounded-lg p-4 text-xs text-gray-800 whitespace-pre-wrap leading-relaxed shadow-inner overflow-x-hidden"></div>
+            </div>
+
+            <!-- Merchant Panel -->
+            <div id="ai-merchant" class="ai-demo-panel hidden">
+                <p class="text-xs text-gray-600 mb-3 border-l-2 border-[#D4A017] pl-2"><strong>Scenario:</strong> Ask the Minuto AI what to stock or prepare for based on hyper-local trends or seasons.</p>
+                <textarea id="merchant-prompt" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#40916C] outline-none text-sm shadow-inner resize-none" rows="3" placeholder="e.g., I run a grocery store in Coimbatore. Diwali is next month. Give me a strategy."></textarea>
+                <button onclick="runMerchantAI(this)" class="w-full mt-3 bg-[#D4A017] hover:bg-[#BA7517] text-[#0D2B1E] font-bold py-2.5 rounded-lg transition-colors text-sm flex items-center justify-center gap-2 shadow-sm">
+                    ✨ Get Strategy
+                </button>
+                <div id="merchant-result" class="mt-4 hidden bg-[#F8F9FA] border border-[#DEE2E0] rounded-lg p-4 text-xs text-gray-800 whitespace-pre-wrap leading-relaxed shadow-inner overflow-x-hidden"></div>
+            </div>
+            
+        </div>
+    </div>
+
+
+    <script>
+        // --- 1. Tagline Animation Logic ---
+        const taglines = [
+            { text: '"India has 63 million businesses. Most of them are invisible. Minuto changes that."', badge: "★ Strongest for investors" },
+            { text: '"Your neighbourhood has everything. Now you can find it."', badge: "★ Strongest for users" },
+            { text: '"We didn\'t build a marketplace. We built an economy."', badge: "★ Strongest for brand identity" },
+            { text: '"One app. Every local need. Zero compromise."', badge: "★ Anti-fragmentation pitch" },
+            { text: '"India\'s best sellers don\'t have a website. They have Minuto."', badge: "★ Best for social media" },
+            { text: '"Every global brand was once a local secret. Minuto finds them first."', badge: "★ Aspirational Angle" }
+        ];
+        
+        let currentTagline = 0;
+        const taglineEl = document.getElementById('tagline-carousel');
+        
+        setInterval(() => {
+            taglineEl.style.opacity = 0;
+            taglineEl.style.transform = "translateY(-5px)";
+            setTimeout(() => {
+                currentTagline = (currentTagline + 1) % taglines.length;
+                taglineEl.innerHTML = `<span class="bg-[#D4A017] text-[#0D2B1E] text-xs font-bold px-2 py-1 rounded mr-3 uppercase tracking-wider">${taglines[currentTagline].badge}</span> <span class="font-medium tracking-wide text-sm md:text-base">${taglines[currentTagline].text}</span>`;
+                taglineEl.style.opacity = 1;
+                taglineEl.style.transform = "translateY(0)";
+            }, 500); 
+        }, 5000); 
+
+        // --- 2. Chart Data ---
+        const chartData = {
+            years: ['Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5'],
+            partners: {
+                panIndia: [50, 200, 5000, 20000, 50000],
+                local: [50, 100, 2000, 10000, 30000],
+                services: [50, 200, 3000, 10000, 20000]
+            },
+            gmv: {
+                panIndia: [0.1, 5, 100, 800, 2500],
+                local: [0.5, 3.6, 50, 400, 1500],
+                services: [0.1, 1, 15, 100, 1000],
+                totalStretch: [0.6, 12, 200, 2000, 8000] 
+            }
+        };
+
+        // --- 3. Audience Messaging Data ---
+        const audienceData = {
+            buyer: {
+                icon: '🛒',
+                title: 'Discovery, Trust, Convenience',
+                tagline: '"The best in your city was always hidden. Minuto finds it for you."',
+                points: [
+                    '"Your neighbour bakes better than any bakery. Find them on Minuto."',
+                    '"Order from your neighbourhood. Pay only when satisfied." (Escrow model)',
+                    '"WhatsApp has no refund button. Minuto does."',
+                    '"Cake for the birthday. Electrician for the kitchen. All from Minuto, before lunch."'
+                ]
+            },
+            seller: {
+                icon: '🏪',
+                title: 'Growth, Simplicity, Safety',
+                tagline: '"No website. No tech skills. No problem. Just more orders."',
+                points: [
+                    '"Your customers are already near you. Minuto just connects you."',
+                    '"From Instagram DMs to a real business — in one app."',
+                    '"Instant payout. No waiting. No chasing customers."',
+                    '"Start local. Scale national. Minuto grows with you."'
+                ]
+            },
+            service: {
+                icon: '🔧',
+                title: 'Steady Income, Professionalization',
+                tagline: '"Your skills deserve more than word-of-mouth."',
+                points: [
+                    '"More bookings. Less running around."',
+                    '"Get reviewed. Get trusted. Get more work."',
+                    '"Minuto handles the booking and payment. You focus on the job."'
+                ]
+            }
+        };
+
+        let partnerChartInstance = null;
+        let gmvChartInstance = null;
+
+        // --- 4. Core Navigation Logic ---
+        function openTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active', 'text-green-900');
+                btn.classList.add('text-gray-500');
+            });
+            event.currentTarget.classList.remove('text-gray-500');
+            event.currentTarget.classList.add('active', 'text-green-900');
+
+            document.querySelectorAll('.section-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            document.getElementById(tabId).classList.add('active');
+
+            if(tabId === 'financials') {
+                setTimeout(() => {
+                    renderPartnerChart();
+                    renderGmvChart();
+                }, 50); 
+            }
+        }
+
+        // --- 5. Audience Content Injector ---
+        function showAudience(type, btnElement) {
+            document.querySelectorAll('.audience-toggle').forEach(btn => {
+                btn.classList.remove('bg-[#1B4332]', 'text-white');
+                btn.classList.add('bg-gray-200', 'text-gray-700');
+            });
+            btnElement.classList.remove('bg-gray-200', 'text-gray-700');
+            btnElement.classList.add('bg-[#1B4332]', 'text-white');
+
+            const data = audienceData[type];
+            const contentDiv = document.getElementById('audience-content');
+            
+            contentDiv.style.opacity = 0;
+            setTimeout(() => {
+                let listHtml = data.points.map(p => `
+                    <li class="flex items-start gap-3 py-2 border-b border-gray-200 last:border-0">
+                        <span class="text-[#40916C] font-bold mt-0.5">✓</span>
+                        <span class="text-gray-700">${p}</span>
+                    </li>
+                `).join('');
+
+                contentDiv.innerHTML = `
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 rounded-full bg-[#D8F3DC] flex items-center justify-center text-2xl shadow-inner">${data.icon}</div>
+                        <div>
+                            <h4 class="font-bold text-[#0D2B1E] text-lg">${data.title}</h4>
+                            <p class="text-sm font-medium text-[#D4A017] italic">${data.tagline}</p>
+                        </div>
+                    </div>
+                    <ul class="mt-4">
+                        ${listHtml}
+                    </ul>
+                `;
+                contentDiv.style.opacity = 1;
+                contentDiv.style.transition = 'opacity 0.3s ease-in-out';
+            }, 150);
+        }
+
+        // --- 6. Chart.js Rendering ---
+        function renderPartnerChart() {
+            const ctx = document.getElementById('partnerChart').getContext('2d');
+            if (partnerChartInstance) partnerChartInstance.destroy();
+
+            partnerChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: chartData.years,
+                    datasets: [
+                        { label: 'Pan-India Sellers', data: chartData.partners.panIndia, backgroundColor: '#0D2B1E' },
+                        { label: 'Local Stores', data: chartData.partners.local, backgroundColor: '#40916C' },
+                        { label: 'Service Pros', data: chartData.partners.services, backgroundColor: '#D4A017' }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { stacked: true, grid: { display: false } },
+                        y: { stacked: true, grid: { color: '#E5E7EB', drawBorder: false } }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { family: "'DM Sans', sans-serif" } } },
+                        tooltip: { mode: 'index', intersect: false, backgroundColor: 'rgba(13, 43, 30, 0.9)', titleFont: { family: "'DM Sans', sans-serif" }, bodyFont: { family: "'DM Sans', sans-serif" } }
+                    }
+                }
+            });
+        }
+
+        function renderGmvChart() {
+            const ctx = document.getElementById('gmvChart').getContext('2d');
+            if (gmvChartInstance) gmvChartInstance.destroy();
+
+            gmvChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chartData.years,
+                    datasets: [
+                        {
+                            label: 'Total Stretch GMV Target',
+                            data: chartData.gmv.totalStretch,
+                            borderColor: '#D4A017',
+                            backgroundColor: 'rgba(212, 160, 23, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Pan-India',
+                            data: chartData.gmv.panIndia,
+                            borderColor: '#0D2B1E',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Local',
+                            data: chartData.gmv.local,
+                            borderColor: '#40916C',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { 
+                            grid: { color: '#E5E7EB', drawBorder: false },
+                            ticks: { callback: function(value) { return '₹' + value + ' Cr'; } }
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { family: "'DM Sans', sans-serif" } } },
+                        tooltip: { 
+                            mode: 'index', 
+                            intersect: false, 
+                            backgroundColor: 'rgba(13, 43, 30, 0.9)',
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ₹' + context.raw + ' Cr';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- 7. Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const initialBtn = document.querySelector('.audience-toggle');
+            showAudience('buyer', initialBtn);
+        });
+
+        // --- 8. Floating AI Bot Logic (Gemini API Integration) ---
+        const apiKey = "";
+        
+        function toggleAiModal() {
+            const modal = document.getElementById('ai-bot-modal');
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                modal.classList.add('show');
+            } else {
+                modal.classList.remove('show');
+                setTimeout(() => modal.classList.add('hidden'), 300); // match transition
+            }
+        }
+
+        function switchAiDemo(type, btnElement) {
+            document.querySelectorAll('.ai-demo-btn').forEach(btn => {
+                btn.classList.remove('bg-[#1E5C40]', 'text-white');
+                btn.classList.add('bg-gray-100', 'text-gray-600');
+            });
+            document.querySelectorAll('.ai-demo-panel').forEach(panel => {
+                panel.classList.add('hidden');
+            });
+            
+            btnElement.classList.remove('bg-gray-100', 'text-gray-600');
+            btnElement.classList.add('bg-[#1E5C40]', 'text-white');
+            
+            document.getElementById('ai-' + type).classList.remove('hidden');
+        }
+
+        async function callGeminiAPI(prompt, systemInstruction, resultElementId, buttonElement) {
+            const resultEl = document.getElementById(resultElementId);
+            const originalBtnText = buttonElement.innerHTML;
+
+            if (!prompt.trim()) {
+                resultEl.style.display = 'block';
+                resultEl.innerHTML = '<span class="text-red-500 font-medium">⚠️ Please enter a scenario first.</span>';
+                return;
+            }
+
+            buttonElement.innerHTML = '✨ Processing... <span class="animate-pulse">⏳</span>';
+            buttonElement.disabled = true;
+            buttonElement.classList.add('opacity-75');
+            resultEl.style.display = 'block';
+            resultEl.innerHTML = '<span class="text-gray-500 italic flex items-center gap-2"><span class="animate-spin text-xl">⚙️</span> Connecting to AI...</span>';
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                systemInstruction: { parts: [{ text: systemInstruction }] }
+            };
+
+            const delays = [1000, 2000, 4000, 8000, 16000];
+            let success = false;
+
+            for (let attempt = 0; attempt < delays.length + 1; attempt++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (!response.ok) {
+                        if (response.status === 429 || response.status >= 500) {
+                            throw new Error(`HTTP Error ${response.status}`);
+                        }
+                        const errorText = await response.text();
+                        throw new Error(`API Error: ${errorText}`);
+                    }
+                    
+                    const data = await response.json();
+                    const outputText = data.candidates[0].content.parts[0].text;
+                    
+                    // Simple markdown rendering for AI output
+                    let formattedHTML = outputText
+                        .replace(/\*\*(.*?)\*\*/g, '<strong class="text-[#0D2B1E]">$1</strong>')
+                        .replace(/\n\* /g, '<br><span class="text-[#40916C] font-bold mr-2">✓</span>')
+                        .replace(/\n/g, '<br>');
+                    
+                    resultEl.innerHTML = `<div class="animate-[fadeIn_0.5s_ease-out]">${formattedHTML}</div>`;
+                    success = true;
+                    break;
+                } catch (error) {
+                    if (attempt === delays.length) {
+                        resultEl.innerHTML = `<span class="text-red-600 font-bold">⚠️ Failed to connect to AI. Ensure API key is configured.</span>`;
+                    } else {
+                        resultEl.innerHTML = `<span class="text-gray-500 italic flex items-center gap-2"><span class="animate-spin text-xl">⚙️</span> Network busy, retry ${attempt + 1}...</span>`;
+                        await new Promise(res => setTimeout(res, delays[attempt]));
+                    }
+                }
+            }
+            
+            buttonElement.innerHTML = originalBtnText;
+            buttonElement.disabled = false;
+            buttonElement.classList.remove('opacity-75');
+        }
+
+        function runBuyerAI(btn) {
+            const prompt = document.getElementById('buyer-prompt').value;
+            const sysInfo = `You are the Minuto Agentic Commerce AI planner. A user is giving you a complex life task. 
+            Your job is to autonomously break this request down into specific actions mapped perfectly to Minuto's 4 verticals: 
+            1) **Minuto Local** (hyperlocal groceries, perishables, instant goods delivery)
+            2) **Minuto Pan-India** (e-commerce for non-perishables, electronics, gifts)
+            3) **Minuto Services** (booking local plumbers, decorators, tailors, makeup artists)
+            4) **Minuto Pay** (budgeting, escrows, split payments). 
+            
+            Present a concise, structured action plan showing how the super-app handles the entire task seamlessly. Use bullet points and bolding. Keep under 150 words. Frame it enthusiastically as "Here is your Minuto Action Plan:"`;
+            
+            callGeminiAPI(prompt, sysInfo, 'buyer-result', btn);
+        }
+
+        function runMerchantAI(btn) {
+            const prompt = document.getElementById('merchant-prompt').value;
+            const sysInfo = `You are an AI Inventory and Strategy Assistant built into the Minuto Super-App, helping an Indian local merchant. 
+            Provide a highly specific, actionable, bulleted strategy on what inventory to stock, what services to offer, and how to price or market them to nearby consumers on the Minuto platform. 
+            Base your advice on the season, region, or query provided. Frame your response as "Minuto Merchant Strategy:" 
+            Keep it actionable, highly relevant to the Indian context (Tier 2/3 cities), and under 150 words.`;
+            
+            callGeminiAPI(prompt, sysInfo, 'merchant-result', btn);
+        }
+    </script>
+</body>
+</html>
